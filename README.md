@@ -1,6 +1,6 @@
 # AntiPacMan
 
-HTML5 game to 5th Game Off Jam [#GitHubGameOff](https://twitter.com/hashtag/GitHubGameOff)
+HTML5 game for 5th Game Off Jam [#GitHubGameOff](https://twitter.com/hashtag/GitHubGameOff)
 
 ![AntiPacMan screeshot](img/screen.png)
 

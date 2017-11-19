@@ -14,7 +14,13 @@ const tileXsize = 20;
 const tileYsize = 20;
 
 preloader.onupdate = x => {textBlock.innerHTML = x+' %';};
-preloader.add('./img/sprites.png');
+preloader.add('./img/sprites.png',
+ './sound/opening_song.mp3', './sound/opening_song.ogg',
+ './sound/eating_short.mp3', './sound/eating_short.ogg',
+ './sound/eatpill.mp3', './sound/eatpill.ogg',
+ './sound/extra_lives.mp3', './sound/extra_lives.ogg',
+ './sound/die.mp3', './sound/die.ogg',
+ );
 
 
 let atlas;
@@ -32,6 +38,9 @@ let scoreBlock = document.getElementById('scoreBlock');
 let scoreDisplay = document.getElementById('score');
 let startButton = document.getElementById('start');
 
+let sounds = {opening: null, gesture: null, hurt: null, extralive: null, die: null};
+let canSound = parseInt(localStorage.getItem("sound")); if (isNaN(canSound)){canSound = 1;}
+
 let engine = (function (){
 
   let map = {width: 0, height: 0, offsetX: 0, offsetY: 0, scale: 0, orient: 1, data: []};
@@ -41,8 +50,7 @@ let engine = (function (){
 
   let maxEnemy = 0, enemyOffset = Math.floor(Math.random()*4);
 
-  let score = 0, canSound = parseInt(localStorage.getItem("sound"));
-  if (isNaN(canSound)){canSound = 1;}
+  let score = 0;
   let highScore = parseInt(localStorage.getItem("high"));
   if (isNaN(highScore)){highScore = 0;}
   let level = 0, multipler = 1, enemyCount = 0;
@@ -57,6 +65,7 @@ let engine = (function (){
     ctxM.clearRect(10, 10, tileXsize*map.scale, tileYsize*map.scale);
     ctxM.drawImage(atlas, (6+canSound)*tileXsize, 0, tileXsize, tileYsize, 10, 10, tileXsize*map.scale, tileYsize*map.scale);
     localStorage.setItem('sound', canSound);
+    for (let prop in sounds) { sounds[prop].mute(!canSound); }
   }
 
   function generateMap(){
@@ -215,6 +224,7 @@ let engine = (function (){
     }
     else{
       player.changeAction(act.damaged);
+      sounds.hurt.play();
     }
     return res;
   }
@@ -316,6 +326,7 @@ let engine = (function (){
 
   function stopGame(){
     let text;
+    sounds.die.play();
     isActive = false;
     cancelAnimationFrame(requestID);
     if (score > highScore){
@@ -352,7 +363,7 @@ let engine = (function (){
 
     map.width  = Math.floor(realWidth*0.75/(20*map.scale));
     map.height = Math.floor(realHeight*0.75/(20*map.scale));
-    maxEnemy = Math.min(Math.ceil((map.width + map.height)/ 8), 6);
+    maxEnemy = 6;
     
     updateCanvasSize(true);
     generateMap();
@@ -393,6 +404,7 @@ let engine = (function (){
           multipler = 1;
         }
         else{
+          sounds.gesture.play();
           if (multipler < 5){
             multipler += 0.25;
           }
@@ -403,6 +415,7 @@ let engine = (function (){
           if (player.health < 3){
             if (level&1){
               player.health++;
+              sounds.extralive.play();
             }
           }
           else{
@@ -502,10 +515,20 @@ canvasT.addEventListener('touchend',   engine.gestureEnd);
 preloader.start().then(() => {
   atlas = preloader.images[0];
 
+  sounds.opening = new Howl({preload : true, src: ['./sound/opening_song.mp3', './sound/opening_song.ogg'], volume: 0.25});
+  sounds.gesture = new Howl({preload : true, src: ['./sound/eating_short.mp3', './sound/eating_short.ogg'], volume: 0.25});
+  sounds.hurt = new Howl({preload : true, src: ['./sound/eatpill.mp3', './sound/eatpill.ogg'], volume: 0.25});
+  sounds.extralive = new Howl({preload : true, src: ['./sound/extra_lives.mp3', './sound/extra_lives.ogg'], volume: 0.25});
+  sounds.die = new Howl({preload : true, src: ['./sound/die.mp3', './sound/die.ogg'], volume: 0.25});
+  for (let prop in sounds) { sounds[prop].mute(!canSound); }
+
+  sounds.opening.play();
+
   textBlock.innerHTML = "<p class='big'>AntiPacMan</p><p>Defeat a pacman by drawing its symbol anywhere</p>";
 
   startButton.classList.remove('hidden');
   startButton.onclick = () => {
+    sounds.opening.stop();
     startButton.classList.add('hidden');
     textBlock.classList.add('hidden');
     scoreBlock.classList.remove('hidden');
