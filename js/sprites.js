@@ -1,10 +1,10 @@
 "use strict";
 
 const act = {
-  idle:    0,
-  move:    1,
-  die:     2,
-  damaged: 3,
+  idle:    1,
+  move:    2,
+  die:     3,
+  damaged: 4,
 };
 
 class Sprite{
@@ -100,7 +100,7 @@ class Ghost extends Sprite{
 }
 
 class Pacman extends Sprite{
-  constructor(x, y, orient, tx, ty, tokens){
+  constructor(x, y, orient, tx, ty, tokens, pact = act.move){
     super(x, y, 20, 20, orient);
     this.tokens = tokens;
     this.tokensWidth   = 0;
@@ -113,7 +113,7 @@ class Pacman extends Sprite{
     if (this.targetX&1 != this.x&1){this.newX++;}
     if (this.targetY&1 != this.y&1){this.newY++;}
 
-    this.action = act.move;
+    this.action = pact;
   }
 
   checkGesture(g){
@@ -221,11 +221,13 @@ class Pacman extends Sprite{
               this.active = false;
             }
           }
-          else{
-            if (this.newX < this.targetX){this.newX+=2;}
-            else if (this.newX > this.targetX){this.newX-=2;}
-            if (this.newY < this.targetY){this.newY+=2;}
-            else if (this.newY > this.targetY){this.newY-=2;}
+          else {
+            if (this.action == act.move){
+              if (this.newX < this.targetX){this.newX+=2;}
+              else if (this.newX > this.targetX){this.newX-=2;}
+              if (this.newY < this.targetY){this.newY+=2;}
+              else if (this.newY > this.targetY){this.newY-=2;}
+            }
 
             this.frame^=1;
           }

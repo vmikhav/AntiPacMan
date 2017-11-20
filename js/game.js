@@ -14,7 +14,7 @@ const tileXsize = 20;
 const tileYsize = 20;
 
 preloader.onupdate = x => {textBlock.innerHTML = x+' %';};
-preloader.add('./img/sprites.png',
+preloader.add('./img/sprites.png', './img/finger.png',
  './sound/opening_song.mp3', './sound/opening_song.ogg',
  './sound/eating_short.mp3', './sound/eating_short.ogg',
  './sound/eatpill.mp3', './sound/eatpill.ogg',
@@ -23,7 +23,7 @@ preloader.add('./img/sprites.png',
  );
 
 
-let atlas;
+let atlas, finger;
 
 let canvasM = document.getElementById('map');
 let canvasA = document.getElementById('act');
@@ -51,9 +51,10 @@ let engine = (function (){
   let maxEnemy = 0, enemyOffset = Math.floor(Math.random()*4);
 
   let score = 0;
+  let level = 0, multipler = 1, enemyCount = 0;
   let highScore = parseInt(localStorage.getItem("high"));
   if (isNaN(highScore)){highScore = 0;}
-  let level = 0, multipler = 1, enemyCount = 0;
+  if (highScore == 0){level = -1;}
 
   let player = {}, enemys = [], enemyPositions = [];
 
@@ -248,6 +249,36 @@ let engine = (function (){
     }
   }
 
+  function drawHint(s){
+    let x, y;
+    if (path.length == 0){
+      ctxT.clearRect(0, 0, realWidth, realHeight);
+    }
+    if (enemys.length && enemys[0].action == act.idle){
+      ctxT.beginPath();
+      ctxT.strokeStyle = 'white';
+      ctxT.lineCap  = "round";
+      ctxT.lineJoin = "round";
+      ctxT.lineWidth = 4*map.scale;
+      if (enemys[0].tokens[0] == gestures.swypeLR){
+        x = map.offsetX + (player.x - tileXsize)*map.scale;
+        y = map.offsetY + (player.y - tileYsize)*map.scale;
+        ctxT.moveTo(x, y);
+        x += s*1.5*map.scale;
+      }
+      else if (enemys[0].tokens[0] == gestures.swypeTD){
+        x = map.offsetX + (player.x + tileXsize*2)*map.scale;
+        y = map.offsetY + (player.y - tileYsize*2.5)*map.scale;
+        ctxT.moveTo(x, y);
+        y += s*map.scale;
+      }
+      ctxT.lineTo(x, y);
+      ctxT.stroke();
+      ctxT.closePath();
+      ctxT.drawImage(finger, x - 4, y);
+    }
+  }
+
   function generateEnemy(){
     let i, j, k, c, t;
     if (enemys.length < maxEnemy){
@@ -317,11 +348,67 @@ let engine = (function (){
     }
   }
 
+  function demoTick(){
+    let i, j, n, dmin;
+    if (isActive){
+      currTick++;
+      drawMousePath();
+      drawHint(globalTick);
+
+      if (currTick == 2){globalTick++;}
+
+      if (currTick >= 4){      
+        globalTick++; if (globalTick >= 40){globalTick = 0;}
+        if (needForceDraw){
+          drawMap();
+          needForceDraw = false;
+        }
+        player.clear(); player.tick(); dmin = 100000; n = -1;
+        for (i = enemys.length - 1; i >= 0; i--) { enemys[i].clear(); enemys[i].tick();}
+        for (i = enemys.length - 1; i >= 0; i--) {
+          if (enemys[i].active){
+            enemys[i].draw();
+          }
+          else{
+            enemys.splice(i, 1);
+            globalTick = 0;
+          }
+        }
+        for (i = enemys.length - 1; i >= 0; i--) {
+          if (enemys[i].active && enemys[i].action != act.die){
+            j = getDistance(enemys[i], player);
+            if (j<dmin){ dmin = j; n = i;}
+          }
+        }
+        if (n >= 0){player.lookAtEnemy(enemys[n]);}
+        player.draw();
+        currTick = 0;
+
+      }
+
+      if (enemys.length){
+        requestID = requestAnimationFrame(demoTick); 
+      }
+      else{
+        level = 0;
+        requestID = requestAnimationFrame(tick); 
+      }
+    }
+  }
+
   function startGame(){
-    score = 0; multipler = 1; level = 0;
+    score = 0; multipler = 1;
     scoreDisplay.innerHTML = score;
-    isActive = true;
-    tick();
+    isActive = true; currTick = 0; globalTick = 0;
+    if (level == -1){
+      enemys.push(new Pacman(enemyPositions[2][0]>>1, enemyPositions[1][1], 1, player.x, player.y, [gestures.swypeLR], act.idle));
+      enemys.push(new Pacman((enemyPositions[0][0]>>2)*3, enemyPositions[0][1], 0, player.x, player.y, [gestures.swypeTD], act.idle));
+      demoTick();
+    }
+    else{
+      level = 0;
+      tick();
+    }
   }
 
   function stopGame(){
@@ -410,16 +497,23 @@ let engine = (function (){
           }
         }
         score += Math.floor(result*multipler);
-        if (level < log2(score>>10)){
-          level++;
-          if (player.health < 3){
-            if (level&1){
-              player.health++;
-              sounds.extralive.play();
-            }
+        if (level == -1){
+          if (enemys.length == 0){
+            level = 0;
           }
-          else{
-            score += 100*level;
+        }
+        else{
+          if (level < log2(score>>10)){
+            level++;
+            if (player.health < 3){
+              if (level&1){
+                player.health++;
+                sounds.extralive.play();
+              }
+            }
+            else{
+              score += 100*level;
+            }
           }
         }
         scoreDisplay.innerHTML = score;
@@ -513,7 +607,8 @@ canvasT.addEventListener('touchmove',  engine.gestureMove);
 canvasT.addEventListener('touchend',   engine.gestureEnd);
 
 preloader.start().then(() => {
-  atlas = preloader.images[0];
+  atlas  = preloader.images[0];
+  finger = preloader.images[1];
 
   sounds.opening = new Howl({preload : true, src: ['./sound/opening_song.mp3', './sound/opening_song.ogg'], volume: 0.25});
   sounds.gesture = new Howl({preload : true, src: ['./sound/eating_short.mp3', './sound/eating_short.ogg'], volume: 0.25});
