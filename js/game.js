@@ -627,6 +627,7 @@ preloader.start().then(() => {
     startButton.classList.add('hidden');
     textBlock.classList.add('hidden');
     scoreBlock.classList.remove('hidden');
+    document.getElementById('credits').classList.add('hidden');
     engine.init();
     engine.startGame();
   };
