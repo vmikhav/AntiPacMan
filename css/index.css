@@ -39,7 +39,7 @@ html, body{
   position: absolute;
   width: 200px;
   height: 60px;
-  top: calc(80vh - 60px);
+  bottom: 150px;
   left: calc(50vw - 100px);
   line-height: 60px;
   text-align: center;
@@ -74,11 +74,23 @@ canvas{
 }
 
 #text{
+  top: 5vh;
+}
+
+@media only screen and (min-height: 550px){
+#text{
+  top: 15vh;
+}
+}
+
+@media only screen and (min-height: 700px){
+#text{
   top: 30vh;
+}
 }
 
 #credits{
-  bottom: 8vh;
+  bottom: 50px;
 }
 
 .big{

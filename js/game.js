@@ -56,7 +56,7 @@ let engine = (function (){
   if (isNaN(highScore)){highScore = 0;}
   if (highScore == 0){level = -1;}
 
-  let player = {}, enemys = [], enemyPositions = [];
+  let player = {}, enemies = [], enemyPositions = [];
 
   let realWidth  = canvasM.scrollWidth;
   let realHeight = canvasM.scrollHeight;
@@ -205,14 +205,24 @@ let engine = (function (){
   }
 
   function rotate(){
+    realWidth  = canvasM.scrollWidth;
+    realHeight = canvasM.scrollHeight;
     if (isActive){
       let i, j, data = [];
       i = map.width; map.width = map.height; map.height = i;
       map.orient ^= 1;
       i = player.x; player.newX = player.y; player.newY = i;
-      for (i = enemys.length - 1; i >= 0; i--) {
-        enemys[i].rotate();
+      for (i = enemies.length - 1; i >= 0; i--) {
+        enemies[i].rotate();
       }
+
+      enemyPositions = [[Math.ceil((map.width - 0.5)*tileXsize), Math.ceil((map.height/2 - 0.5)*tileYsize)],
+                      [0, Math.ceil((map.height/2 - 0.5)*tileYsize)],
+                      [Math.ceil((map.width/2 - 0.5)*tileXsize), Math.ceil((map.height - 0.5)*tileYsize)],
+                      [Math.ceil((map.width/2 - 0.5)*tileXsize), 0]];
+    }
+    else{
+      ctxA.clearRect(0, 0, realWidth, realHeight);
     }
   }
 
@@ -254,19 +264,19 @@ let engine = (function (){
     if (path.length == 0){
       ctxT.clearRect(0, 0, realWidth, realHeight);
     }
-    if (enemys.length && enemys[0].action == act.idle){
+    if (enemies.length && enemies[0].action == act.idle){
       ctxT.beginPath();
       ctxT.strokeStyle = 'white';
       ctxT.lineCap  = "round";
       ctxT.lineJoin = "round";
       ctxT.lineWidth = 4*map.scale;
-      if (enemys[0].tokens[0] == gestures.swypeLR){
+      if (enemies[0].tokens[0] == gestures.swypeLR){
         x = map.offsetX + (player.x - tileXsize)*map.scale;
         y = map.offsetY + (player.y - tileYsize)*map.scale;
         ctxT.moveTo(x, y);
         x += s*1.5*map.scale;
       }
-      else if (enemys[0].tokens[0] == gestures.swypeTD){
+      else if (enemies[0].tokens[0] == gestures.swypeTD){
         x = map.offsetX + (player.x + tileXsize*2)*map.scale;
         y = map.offsetY + (player.y - tileYsize*2.5)*map.scale;
         ctxT.moveTo(x, y);
@@ -281,9 +291,9 @@ let engine = (function (){
 
   function generateEnemy(){
     let i, j, k, c, t;
-    if (enemys.length < maxEnemy){
+    if (enemies.length < maxEnemy){
       do {
-        c = Math.floor(Math.random()*Math.min(maxEnemy - enemys.length + 1, 5));
+        c = Math.floor(Math.random()*Math.min(maxEnemy - enemies.length + 1, 5));
       } while (!(enemyCount || c));
       if (c < 4 && Math.floor(Math.random()*level)) {c++;}
       enemyCount = c;
@@ -296,7 +306,7 @@ let engine = (function (){
           j = j < 6 ? j&1 : j-4;
           t.push(j+2);
         }
-        enemys.push(new Pacman(enemyPositions[enemyOffset][0], enemyPositions[enemyOffset][1], enemyOffset, player.x, player.y, t));
+        enemies.push(new Pacman(enemyPositions[enemyOffset][0], enemyPositions[enemyOffset][1], enemyOffset, player.x, player.y, t));
         enemyOffset++;
         if (enemyOffset >= 4){enemyOffset = 0;}
       }
@@ -310,7 +320,7 @@ let engine = (function (){
       drawMousePath();
       if (globalTick >= 65){
         globalTick = 0;
-        if (enemys.length == 0){
+        if (enemies.length == 0){
           multipler = 1;
         }
         generateEnemy();
@@ -322,22 +332,22 @@ let engine = (function (){
           needForceDraw = false;
         }
         player.clear(); player.tick(); dmin = 100000; n = -1;
-        for (i = enemys.length - 1; i >= 0; i--) { enemys[i].clear(); enemys[i].tick();}
-        for (i = enemys.length - 1; i >= 0; i--) {
-          if (enemys[i].active){
-            enemys[i].draw();
+        for (i = enemies.length - 1; i >= 0; i--) { enemies[i].clear(); enemies[i].tick();}
+        for (i = enemies.length - 1; i >= 0; i--) {
+          if (enemies[i].active){
+            enemies[i].draw();
           }
           else{
-            enemys.splice(i, 1);
+            enemies.splice(i, 1);
           }
         }
-        for (i = enemys.length - 1; i >= 0; i--) {
-          if (enemys[i].active && enemys[i].action != act.die){
-            j = getDistance(enemys[i], player);
+        for (i = enemies.length - 1; i >= 0; i--) {
+          if (enemies[i].active && enemies[i].action != act.die){
+            j = getDistance(enemies[i], player);
             if (j<dmin){ dmin = j; n = i;}
           }
         }
-        if (n >= 0){player.lookAtEnemy(enemys[n]);}
+        if (n >= 0){player.lookAtEnemy(enemies[n]);}
         player.draw();
         currTick = 0;
 
@@ -364,29 +374,29 @@ let engine = (function (){
           needForceDraw = false;
         }
         player.clear(); player.tick(); dmin = 100000; n = -1;
-        for (i = enemys.length - 1; i >= 0; i--) { enemys[i].clear(); enemys[i].tick();}
-        for (i = enemys.length - 1; i >= 0; i--) {
-          if (enemys[i].active){
-            enemys[i].draw();
+        for (i = enemies.length - 1; i >= 0; i--) { enemies[i].clear(); enemies[i].tick();}
+        for (i = enemies.length - 1; i >= 0; i--) {
+          if (enemies[i].active){
+            enemies[i].draw();
           }
           else{
-            enemys.splice(i, 1);
+            enemies.splice(i, 1);
             globalTick = 0;
           }
         }
-        for (i = enemys.length - 1; i >= 0; i--) {
-          if (enemys[i].active && enemys[i].action != act.die){
-            j = getDistance(enemys[i], player);
+        for (i = enemies.length - 1; i >= 0; i--) {
+          if (enemies[i].active && enemies[i].action != act.die){
+            j = getDistance(enemies[i], player);
             if (j<dmin){ dmin = j; n = i;}
           }
         }
-        if (n >= 0){player.lookAtEnemy(enemys[n]);}
+        if (n >= 0){player.lookAtEnemy(enemies[n]);}
         player.draw();
         currTick = 0;
 
       }
 
-      if (enemys.length){
+      if (enemies.length){
         requestID = requestAnimationFrame(demoTick); 
       }
       else{
@@ -401,8 +411,8 @@ let engine = (function (){
     scoreDisplay.innerHTML = score;
     isActive = true; currTick = 0; globalTick = 0;
     if (level == -1){
-      enemys.push(new Pacman(enemyPositions[2][0]>>1, enemyPositions[1][1], 1, player.x, player.y, [gestures.swypeLR], act.idle));
-      enemys.push(new Pacman((enemyPositions[0][0]>>2)*3, enemyPositions[0][1], 0, player.x, player.y, [gestures.swypeTD], act.idle));
+      enemies.push(new Pacman(enemyPositions[2][0]>>1, enemyPositions[1][1], 1, player.x, player.y, [gestures.swypeLR], act.idle));
+      enemies.push(new Pacman((enemyPositions[0][0]>>2)*3, enemyPositions[0][1], 0, player.x, player.y, [gestures.swypeTD], act.idle));
       demoTick();
     }
     else{
@@ -461,7 +471,7 @@ let engine = (function (){
                       [Math.ceil((map.width/2 - 0.5)*tileXsize), 0]]
 
     player = new Ghost(Math.ceil((map.width/2 - 0.5)*tileXsize), Math.ceil((map.height/2 - 0.5)*tileYsize));
-    enemys = [];
+    enemies = [];
   }
 
   function log2(x){
@@ -476,9 +486,9 @@ let engine = (function (){
     let i, r, result = 0;
     if (isActive){
       if (g){
-        for (i = enemys.length - 1; i >= 0; i--) {
-          if (enemys[i].active && enemys[i].action != act.die){
-            r = enemys[i].checkGesture(g);
+        for (i = enemies.length - 1; i >= 0; i--) {
+          if (enemies[i].active && enemies[i].action != act.die){
+            r = enemies[i].checkGesture(g);
             if (r == 1){
               result += 10;
             }
@@ -498,7 +508,7 @@ let engine = (function (){
         }
         score += Math.floor(result*multipler);
         if (level == -1){
-          if (enemys.length == 0){
+          if (enemies.length == 0){
             level = 0;
           }
         }
@@ -533,15 +543,23 @@ let engine = (function (){
   }
 
   function gestureStart(evt){
-    mouseIsDown = true;
-    //window.ontouchmove = preventDefault;
-    path = [Point(evt)];
+    if (isActive){
+      mouseIsDown = true;
+      //window.ontouchmove = preventDefault;
+      path = [Point(evt)];
+      evt.preventDefault();
+      return false;
+    }
+    return true;
   }
 
   function gestureMove(evt){
     if (mouseIsDown){
       path.push(Point(evt));
+      evt.preventDefault();
+      return false;
     }
+    return true;
   }
 
   function gestureEnd(evt){
@@ -564,7 +582,9 @@ let engine = (function (){
 
 
       applyGesture(gesture);
+      return false;
     }
+    return true;
   }
 
   let _engine = {
