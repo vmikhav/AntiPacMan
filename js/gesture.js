@@ -23,7 +23,7 @@ function getSectionOrient(a, b){
 
   let ratio = Math.abs(dx)/(Math.abs(dx)+Math.abs(dy));
 
-  if (ratio >= 0.88){
+  if (ratio >= 0.75){
     result.x = Math.sign(dx);
   }
   else if (ratio <= 0.2){
@@ -37,7 +37,7 @@ function getSectionOrient(a, b){
 }
 
 function cogniteGesture(path){
-  let i, j, k, result = 0;
+  let i, j, k, ol, result = 0;
   let orients = [];
   if (path.length == 2){
     if (getDistance(path[0], path[1]) < 100){
@@ -63,6 +63,8 @@ function cogniteGesture(path){
       }
     }
 
+    ol = orients.length;
+
     if (orients.length == 2 && Math.abs(orients[0].y + orients[1].y) == 2 && Math.abs(orients[0].x + orients[1].x) <= 1){
       result = gestures.swypeTD;
     }
@@ -76,11 +78,11 @@ function cogniteGesture(path){
           result = gestures.swypeTDT;
         }
     }
-    else if (orients.length == 3){
-      if (Math.abs(orients[0].y + orients[2].y) == 2 
-          && orients[0].x == orients[2].x 
+    else if (ol == 3 || ol == 4){
+      if (Math.abs(orients[0].y + orients[ol - 1].y) == 2 
+          && orients[0].x == orients[ol - 1].x 
           && orients[1].x == -orients[0].x 
-          && orients[1].y == 0){
+          && (ol == 3 || orients[2].x == -orients[0].x)){
         result = gestures.swypeTLRD;
       }
     }
