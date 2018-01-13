@@ -313,9 +313,9 @@ let engine = (function (){
         if (k > 3){ k = 3;}
         else if (k == 0 && level >= 1){k++;}
         if (k <= 2 && Math.floor(Math.random()*level)){k++;}
-        if (k == 3 && ((enemyOffset < 2 && map.width < 14) || map.height < 14)){k--;}
+        //if (k == 3 && ((enemyOffset < 2 && map.width < 14) || map.height < 14)){k--;}
         for (l = 0; l <= k; l++){
-          j = Math.floor(Math.random()*(16 + level - k));
+          j = Math.floor(Math.random()*(18 + (level*1.05) - k));
           j = j < 12 ? j&1 : (j&1) + 2;
           globalTick -= j;
           t.push(j+2);
@@ -497,7 +497,7 @@ let engine = (function (){
 
     map.width  = Math.floor(realWidth*0.75/(tileXsize*map.scale));
     map.height = Math.floor(realHeight*0.75/(tileYsize*map.scale));
-    maxEnemy = Math.min(Math.floor((map.width + map.height)/6), 6);
+    maxEnemy = Math.max(Math.min(Math.floor((map.width + map.height)/6), 6), 4);
     if (map.width < 12){map.width += 2;}
     if (map.height < 12){map.height += 2;}
     console.log(map.width, map.height);
