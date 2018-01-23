@@ -14,7 +14,7 @@ HTML5 game for 5th Game Off Jam [#GitHubGameOff](https://twitter.com/hashtag/Git
 
 ## Install
 
-Just clone repo or play [here](https://sungmaster.github.io/AntiPacMan/)
+Just clone repo or play [here](https://vmikhav.github.io/AntiPacMan/)
 
 ## Gameplay
 
