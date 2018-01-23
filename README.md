@@ -14,7 +14,7 @@ HTML5 game for 5th Game Off Jam [#GitHubGameOff](https://twitter.com/hashtag/Git
 
 ## Install
 
-Just clone repo or play [here](https://sungmaster.github.io/AntiPacMan/)
+Just clone repo or play [here](https://vmikhav.github.io/AntiPacMan/)
 
 ## Gameplay
 
@@ -22,11 +22,11 @@ Defeat a pacman by drawing its symbol anywhere
 
 ## Maintainers
 
-[@sungmaster](https://github.com/sungmaster).
+[@vmikhav](https://github.com/vmikhav).
 
 ## Contribute
 
-Feel free to dive in! [Open an issue](https://github.com/sungmaster/AntiPacMan/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/vmikhav/AntiPacMan/issues/new) or submit PRs.
 
 ## License
 
