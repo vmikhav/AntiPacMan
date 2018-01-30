@@ -2,6 +2,8 @@
 
 HTML5 game for 5th Game Off Jam [#GitHubGameOff](https://twitter.com/hashtag/GitHubGameOff)
 
+Available in [Google Play](https://play.google.com/store/apps/details?id=io.vmikhav.antipacman)
+
 ![AntiPacMan screeshot](img/screen.png)
 
 ## Table of Contents
